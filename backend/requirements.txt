@@ -1,0 +1,6 @@
+flask
+werkzeug
+celery[redis]
+email-validator
+smtplib
+boto3

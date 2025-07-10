@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    container_name: video_converter_app
+    volumes:
+      - ./uploads:/app/uploads
+      - ./outputs:/app/outputs
+    restart: always
+
+  redis:
+    image: redis:latest
+
+  worker:
+    build: .
+    command: celery -A celery_worker worker --loglevel=info
+    depends_on:
+      - app
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+      - ./outputs:/app/outputs
+
+  beat:
+    build: .
+    command: celery -A celery_worker beat --loglevel=info
+    depends_on:
+      - app
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+      - ./outputs:/app/outputs
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
